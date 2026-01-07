@@ -76,4 +76,67 @@
             const name = document.getElementById('student-name').value;
             const studentId = document.getElementById('student-id').value;
             const fileInput = document.getElementById('photo');
-            const status = document.getElementById('
+            const status = document.getElementById('status');
+            const btn = document.getElementById('submit-btn');
+
+            if (!name || !studentId || fileInput.files.length === 0) return alert("항목을 모두 확인해주세요.");
+
+            btn.disabled = true;
+            status.innerHTML = "⏳ 이미지 처리 중...";
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // [설정] 사장님이 말씀하신 1600px로 원복했습니다.
+                    const TARGET_WIDTH = 1600; 
+                    let w = img.width, h = img.height;
+                    if (w > TARGET_WIDTH) { h *= TARGET_WIDTH / w; width = TARGET_WIDTH; }
+                    canvas.width = w; canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    
+                    const base64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+
+                    status.innerHTML = "⏳ 전송 중...";
+                    fetch(WEB_APP_URL, { 
+                        method: "POST", 
+                        body: JSON.stringify({ name: name, studentId: studentId, base64: base64 }) 
+                    })
+                    .then(() => { 
+                        status.innerHTML = "✅ 제출 성공!"; 
+                        btn.disabled = false; 
+                    })
+                    .catch(() => { 
+                        status.innerText = "❌ 전송 실패"; 
+                        btn.disabled = false; 
+                    });
+                };
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+
+        function fetchResults() {
+            const id = document.getElementById('search-id').value;
+            const list = document.getElementById('result-list');
+            if (!id) return alert("아이디를 입력하세요.");
+            list.innerHTML = "⏳ 조회 중...";
+            fetch(`${WEB_APP_URL}?studentId=${id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data || data.length === 0) { list.innerHTML = "기록이 없습니다."; return; }
+                list.innerHTML = data.reverse().map(item => `
+                    <div class="result-item">
+                        <div class="result-date">${item.date}</div>
+                        <div class="result-feedback">${item.feedback}</div>
+                        <img src="${item.imageUrl}" class="result-img">
+                    </div>
+                `).join('');
+            });
+        }
+    </script>
+</body>
+</html>
