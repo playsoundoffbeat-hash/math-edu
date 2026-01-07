@@ -85,45 +85,52 @@
             status.innerHTML = "⏳ 이미지 처리 중...";
 
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
+    reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-                    // [수정 완료] 1600px 고정 로직 오타 수정
-                    const TARGET_WIDTH = 1600; 
-                    let w = img.width, h = img.height;
+            // [최적화] 2.5 Pro 전송 안정성을 위한 리사이징 (1200px)
+            const MAX_WIDTH = 1200; 
+            let w = img.width;
+            let h = img.height;
 
-                    if (w > TARGET_WIDTH) { 
-                        h *= TARGET_WIDTH / w; 
-                        w = TARGET_WIDTH; // width -> w로 정확히 수정했습니다.
-                    }
+            if (w > MAX_WIDTH) {
+                h *= MAX_WIDTH / w;
+                w = MAX_WIDTH;
+            }
 
-                    canvas.width = w; 
-                    canvas.height = h;
-                    ctx.drawImage(img, 0, 0, w, h);
-                    
-                    const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+            canvas.width = w;
+            canvas.height = h;
+            ctx.drawImage(img, 0, 0, w, h);
+            
+            // [최적화] 품질을 0.6으로 낮춰 데이터 전송 실패 방지
+            const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-                    status.innerHTML = "⏳ 전송 중...";
-                    fetch(WEB_APP_URL, { 
-                        method: "POST", 
-                        body: JSON.stringify({ name: name, studentId: studentId, base64: base64 }) 
-                    })
-                    .then(() => { 
-                        status.innerHTML = "✅ 제출 성공!"; 
-                        btn.disabled = false; 
-                    })
-                    .catch(() => { 
-                        status.innerText = "❌ 전송 실패"; 
-                        btn.disabled = false; 
-                    });
-                };
-            };
-            reader.readAsDataURL(fileInput.files[0]);
-        }
+            status.innerHTML = "⏳ 전송 중...";
+            fetch(WEB_APP_URL, { 
+                method: "POST", 
+                body: JSON.stringify({ name: name, studentId: studentId, base64: base64 }) 
+            })
+            .then(res => res.text())
+            .then(txt => {
+                if(txt === "Success") {
+                    status.innerHTML = "✅ 제출 성공! 잠시 후 결과를 확인하세요.";
+                } else {
+                    status.innerHTML = "❌ 서버 에러: " + txt;
+                }
+                btn.disabled = false;
+            })
+            .catch(err => { 
+                status.innerText = "❌ 네트워크 오류"; 
+                btn.disabled = false;
+            });
+        };
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+}
 
         function fetchResults() {
             const id = document.getElementById('search-id').value;
@@ -146,6 +153,7 @@
     </script>
 </body>
 </html>
+
 
 
 
