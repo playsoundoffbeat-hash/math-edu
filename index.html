@@ -99,4 +99,51 @@
             const resetBtn = document.getElementById('reset-btn');
 
             if (!name || fileInput.files.length === 0) {
-                alert("이름과 사진을
+                alert("이름과 사진을 확인해주세요.");
+                return;
+            }
+
+            btn.disabled = true;
+            status.innerHTML = "⏳ 사진 압축 및 전송 중... (최대 10초)";
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const MAX_WIDTH = 1024;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+
+                    const data = { name: name, base64: base64 };
+
+                    fetch(WEB_APP_URL, {
+                        method: "POST",
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.text())
+                    .then(text => {
+                        status.innerHTML = "✅ 제출 성공!<br><small>다른 사진을 더 보낼 수 있습니다.</small>";
+                        btn.style.display = 'none'; // 제출 버튼 숨기기
+                        resetBtn.style.display = 'block'; // '추가 제출' 버튼 보이기
+                        alert("성공적으로 제출되었습니다!");
+                    })
+                    .catch(err => {
+                        status.innerText = "❌ 오류 발생. 다시 시도해주세요.";
+                        btn.disabled = false;
+                    });
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
