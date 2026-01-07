@@ -105,7 +105,7 @@
                     canvas.height = h;
                     ctx.drawImage(img, 0, 0, w, h);
                     
-                    const base64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+                    const base64 = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
 
                     status.innerHTML = "⏳ 전송 중...";
                     fetch(WEB_APP_URL, { 
@@ -146,3 +146,4 @@
     </script>
 </body>
 </html>
+
