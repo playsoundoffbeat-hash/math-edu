@@ -16,13 +16,15 @@
         .file-label { display: inline-block; padding: 12px; cursor: pointer; background: #007BFF; color: #fff; border-radius: 5px; font-weight: bold; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
         input[type="file"] { display: none; }
         
-        /* 사진 미리보기 스타일 */
         #preview-container { margin: 15px 0; display: none; }
         #preview-img { width: 100%; border-radius: 8px; border: 2px solid #007BFF; }
         
         .submit-btn { background: #28a745; color: white; border: none; padding: 15px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; }
-        .submit-btn:disabled { background: #ccc; }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
         #status { margin-top: 15px; font-weight: bold; word-break: break-all; }
+        
+        /* 새로 추가된 '다시 제출' 버튼 스타일 */
+        .reset-btn { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 14px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -40,7 +42,7 @@
             <input type="text" id="student-name" placeholder="이름을 입력하세요">
         </div>
 
-        <label class="file-label">
+        <label class="file-label" id="file-label">
             <input type="file" id="photo" accept="image/*" capture="camera" onchange="previewFile()">
             📷 사진 촬영 / 확인
         </label>
@@ -51,13 +53,14 @@
         </div>
         
         <button class="submit-btn" onclick="uploadData()" id="submit-btn">과제 제출하기</button>
+        <button class="reset-btn" onclick="resetForm()" id="reset-btn">🔄 추가 과제 제출하기</button>
+        
         <div id="status"></div>
     </div>
 
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwFgy_p_zQZPe3E4waNbmBgaqramByCLIlZBD9UnNuMZN7o_uTkneuqwNk2QnO8gh8h/exec"; 
 
-        // 1. 사진 선택 시 미리보기 보여주기
         function previewFile() {
             const file = document.getElementById('photo').files[0];
             const preview = document.getElementById('preview-img');
@@ -73,60 +76,27 @@
             }
         }
 
-        // 2. 이미지 압축 및 전송
+        // [핵심] 폼 초기화 함수 - 새로고침 없이 다음 제출 준비
+        function resetForm() {
+            document.getElementById('photo').value = ""; // 파일 선택 초기화
+            document.getElementById('preview-img').src = "";
+            document.getElementById('preview-container').style.display = 'none';
+            document.getElementById('status').innerHTML = "";
+            
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerText = "과제 제출하기";
+            
+            document.getElementById('reset-btn').style.display = 'none';
+        }
+
         function uploadData() {
             const name = document.getElementById('student-name').value;
             const fileInput = document.getElementById('photo');
             const status = document.getElementById('status');
             const btn = document.getElementById('submit-btn');
+            const resetBtn = document.getElementById('reset-btn');
 
             if (!name || fileInput.files.length === 0) {
-                alert("이름과 사진을 확인해주세요.");
-                return;
-            }
-
-            btn.disabled = true;
-            status.innerHTML = "⏳ 사진 압축 및 전송 중... (최대 10초)";
-
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = function() {
-                    // 이미지 압축 로직 (너비 1024px 기준)
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const MAX_WIDTH = 1024;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1]; // 70% 화질로 압축
-
-                    const data = { name: name, base64: base64 };
-
-                    fetch(WEB_APP_URL, {
-                        method: "POST",
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => response.text())
-                    .then(text => {
-                        status.innerHTML = "✅ 제출 성공!<br><small>파일이 서버에 안전하게 기록되었습니다.</small>";
-                        btn.style.display = 'none';
-                        alert("성공적으로 제출되었습니다!");
-                    })
-                    .catch(err => {
-                        status.innerText = "❌ 오류 발생. 다시 시도해주세요.";
-                        btn.disabled = false;
-                    });
-                };
-            };
-            reader.readAsDataURL(file);
-        }
-    </script>
-</body>
-</html>
-
+                alert("이름과 사진을
