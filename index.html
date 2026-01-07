@@ -8,17 +8,21 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
     <style>
         body { font-family: 'Pretendard', sans-serif; line-height: 1.6; color: #333; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #fff; }
-        h1 { border-bottom: 2px solid #007BFF; padding-bottom: 10px; color: #007BFF; font-size: 1.5rem; }
+        h1 { border-bottom: 2px solid #007BFF; padding-bottom: 10px; color: #007BFF; font-size: 1.4rem; }
         .problem-card { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         .upload-section { background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; }
-        .file-label { display: inline-block; padding: 12px 24px; cursor: pointer; background: #007BFF; color: #fff; border-radius: 5px; font-weight: bold; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .file-label { display: inline-block; padding: 12px; cursor: pointer; background: #007BFF; color: #fff; border-radius: 5px; font-weight: bold; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
         input[type="file"] { display: none; }
-        .submit-btn { background: #28a745; color: white; border: none; padding: 15px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; }
-        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
-        #status { margin-top: 15px; font-weight: bold; color: #007BFF; }
+        
+        /* 사진 미리보기 스타일 */
+        #preview-container { margin: 15px 0; display: none; }
+        #preview-img { width: 100%; border-radius: 8px; border: 2px solid #007BFF; }
+        
+        .submit-btn { background: #28a745; color: white; border: none; padding: 15px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        .submit-btn:disabled { background: #ccc; }
+        #status { margin-top: 15px; font-weight: bold; word-break: break-all; }
     </style>
 </head>
 <body>
@@ -27,28 +31,49 @@
 
     <div class="problem-card">
         <strong>문제 1.</strong>
-        <p>다음 이차방정식의 풀이 과정을 적고 사진을 찍어 제출하세요.</p>
-        <p style="font-size: 1.4em; text-align: center;">$$x^2 - 5x + 6 = 0$$</p>
+        <p>다음 이차방정식의 풀이 과정을 제출하세요.</p>
+        <p style="font-size: 1.4em; text-align: center;">\(x^2 - 5x + 6 = 0\)</p>
     </div>
 
     <div class="upload-section">
         <div class="input-group">
-            <label for="student-name">이름</label>
             <input type="text" id="student-name" placeholder="이름을 입력하세요">
         </div>
 
         <label class="file-label">
-            <input type="file" id="photo" accept="image/*" capture="camera">
-            📷 사진 촬영 / 선택
+            <input type="file" id="photo" accept="image/*" capture="camera" onchange="previewFile()">
+            📷 사진 촬영 / 확인
         </label>
+
+        <div id="preview-container">
+            <p style="font-size: 0.9rem; color: #666;">선택된 사진 확인:</p>
+            <img id="preview-img" src="" alt="미리보기">
+        </div>
         
         <button class="submit-btn" onclick="uploadData()" id="submit-btn">과제 제출하기</button>
         <div id="status"></div>
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwFgy_p_zQZPe3E4waNbmBgaqramByCLIlZBD9UnNuMZN7o_uTkneuqwNk2QnO8gh8h/exec"; // <--- 이 부분을 수정하세요!
+        const WEB_APP_URL = "여기에_복사한_웹_앱_URL_넣기"; 
 
+        // 1. 사진 선택 시 미리보기 보여주기
+        function previewFile() {
+            const file = document.getElementById('photo').files[0];
+            const preview = document.getElementById('preview-img');
+            const container = document.getElementById('preview-container');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    container.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 2. 이미지 압축 및 전송
         function uploadData() {
             const name = document.getElementById('student-name').value;
             const fileInput = document.getElementById('photo');
@@ -56,38 +81,48 @@
             const btn = document.getElementById('submit-btn');
 
             if (!name || fileInput.files.length === 0) {
-                alert("이름을 입력하고 사진을 찍어주세요.");
+                alert("이름과 사진을 확인해주세요.");
                 return;
             }
 
             btn.disabled = true;
-            status.innerText = "제출 중... 잠시만 기다려주세요.";
+            status.innerHTML = "⏳ 사진 압축 및 전송 중... (최대 10초)";
 
             const file = fileInput.files[0];
             const reader = new FileReader();
 
             reader.onload = function(e) {
-                const base64 = e.target.result.split(',')[1];
-                const data = {
-                    name: name,
-                    base64: base64
-                };
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    // 이미지 압축 로직 (너비 1024px 기준)
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const MAX_WIDTH = 1024;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
 
-                fetch(WEB_APP_URL, {
-                    method: "POST",
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.text())
-                .then(text => {
-                    status.innerText = "✅ " + text;
-                    btn.disabled = false;
-                    alert("제출이 완료되었습니다!");
-                })
-                .catch(err => {
-                    status.innerText = "❌ 오류 발생. 다시 시도해주세요.";
-                    btn.disabled = false;
-                    console.error(err);
-                });
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1]; // 70% 화질로 압축
+
+                    const data = { name: name, base64: base64 };
+
+                    fetch(WEB_APP_URL, {
+                        method: "POST",
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.text())
+                    .then(text => {
+                        status.innerHTML = "✅ 제출 성공!<br><small>파일이 서버에 안전하게 기록되었습니다.</small>";
+                        btn.style.display = 'none';
+                        alert("성공적으로 제출되었습니다!");
+                    })
+                    .catch(err => {
+                        status.innerText = "❌ 오류 발생. 다시 시도해주세요.";
+                        btn.disabled = false;
+                    });
+                };
             };
             reader.readAsDataURL(file);
         }
