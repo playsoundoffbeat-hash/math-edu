@@ -1,135 +1,62 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>수학 과제 제출 센터</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
-    <style>
-        body { font-family: 'Pretendard', sans-serif; line-height: 1.6; color: #333; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #fff; }
-        h1 { border-bottom: 2px solid #007BFF; padding-bottom: 10px; color: #007BFF; font-size: 1.4rem; }
-        .problem-card { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .input-group { margin-bottom: 15px; }
-        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .upload-section { background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; }
-        .file-label { display: inline-block; padding: 12px; cursor: pointer; background: #007BFF; color: #fff; border-radius: 5px; font-weight: bold; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-        input[type="file"] { display: none; }
-        
-        #preview-container { margin: 15px 0; display: none; }
-        #preview-img { width: 100%; border-radius: 8px; border: 2px solid #007BFF; }
-        
-        .submit-btn { background: #28a745; color: white; border: none; padding: 15px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; }
-        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
-        #status { margin-top: 15px; font-weight: bold; word-break: break-all; }
-        .reset-btn { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 14px; margin-top: 10px; display: none; }
-    </style>
-</head>
-<body>
+function uploadData() {
+    const name = document.getElementById('student-name').value;
+    const fileInput = document.getElementById('photo');
+    const status = document.getElementById('status');
+    const btn = document.getElementById('submit-btn');
+    const resetBtn = document.getElementById('reset-btn');
 
-    <h1>오늘의 수학 과제</h1>
+    if (!name || fileInput.files.length === 0) {
+        alert("이름과 사진을 확인해주세요.");
+        return;
+    }
 
-    <div class="problem-card">
-        <strong>문제 1.</strong>
-        <p>다음 이차방정식의 풀이 과정을 제출하세요.</p>
-        <p style="font-size: 1.4em; text-align: center;">\(x^2 - 5x + 6 = 0\)</p>
-    </div>
+    btn.disabled = true;
+    status.innerHTML = "🚀 고해상도 최적화 및 전송 중... (조금만 기다려주세요)";
 
-    <div class="upload-section">
-        <div class="input-group">
-            <input type="text" id="student-name" placeholder="이름을 입력하세요">
-        </div>
+    const file = fileInput.files[0];
+    const reader = new FileReader();
 
-        <label class="file-label" id="file-label">
-            <input type="file" id="photo" accept="image/*" capture="camera" onchange="previewFile()">
-            📷 사진 촬영 / 확인
-        </label>
-
-        <div id="preview-container">
-            <p style="font-size: 0.9rem; color: #666;">선택된 사진 확인:</p>
-            <img id="preview-img" src="" alt="미리보기">
-        </div>
-        
-        <button class="submit-btn" onclick="uploadData()" id="submit-btn">과제 제출하기</button>
-        <button class="reset-btn" onclick="resetForm()" id="reset-btn">🔄 추가 과제 제출하기</button>
-        
-        <div id="status"></div>
-    </div>
-
-    <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwFgy_p_zQZPe3E4waNbmBgaqramByCLIlZBD9UnNuMZN7o_uTkneuqwNk2QnO8gh8h/exec"; 
-
-        function previewFile() {
-            const file = document.getElementById('photo').files[0];
-            const preview = document.getElementById('preview-img');
-            const container = document.getElementById('preview-container');
+    reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
             
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    container.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            }
-        }
+            // QHD급(2560px) 해상도로 리사이징하여 용량을 1/10로 줄임
+            const TARGET_WIDTH = 2560; 
+            let width = img.width;
+            let height = img.height;
 
-        function resetForm() {
-            document.getElementById('photo').value = ""; 
-            document.getElementById('preview-img').src = "";
-            document.getElementById('preview-container').style.display = 'none';
-            document.getElementById('status').innerHTML = "";
-            
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.style.display = 'block';
-            submitBtn.disabled = false;
-            submitBtn.innerText = "과제 제출하기";
-            
-            document.getElementById('reset-btn').style.display = 'none';
-        }
-
-        function uploadData() {
-            const name = document.getElementById('student-name').value;
-            const fileInput = document.getElementById('photo');
-            const status = document.getElementById('status');
-            const btn = document.getElementById('submit-btn');
-            const resetBtn = document.getElementById('reset-btn');
-
-            if (!name || fileInput.files.length === 0) {
-                alert("이름과 사진을 확인해주세요.");
-                return;
+            if (width > TARGET_WIDTH) {
+                height = height * (TARGET_WIDTH / width);
+                width = TARGET_WIDTH;
             }
 
-            btn.disabled = true;
-            status.innerHTML = "⏳ 원본 사진 전송 중... (대용량은 시간이 소요됩니다)";
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // 80% 화질로 압축 (용량은 확 줄고, AI 가독성은 유지)
+            const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+            const data = { name: name, base64: base64 };
 
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                // [수정 포인트] Canvas 압축 과정을 삭제하고 원본 Base64 데이터를 추출합니다.
-                const base64 = e.target.result.split(',')[1];
-                const data = { name: name, base64: base64 };
-
-                fetch(WEB_APP_URL, {
-                    method: "POST",
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.text())
-                .then(text => {
-                    status.innerHTML = "✅ 원본 제출 성공!<br><small>고화질 분석을 시작합니다.</small>";
-                    btn.style.display = 'none';
-                    resetBtn.style.display = 'block';
-                    alert("성공적으로 제출되었습니다!");
-                })
-                .catch(err => {
-                    status.innerText = "❌ 전송 오류. 다시 시도해주세요.";
-                    btn.disabled = false;
-                });
-            };
-            // 원본 파일을 그대로 읽습니다.
-            reader.readAsDataURL(file);
-        }
-    </script>
-</body>
-</html>
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text())
+            .then(text => {
+                status.innerHTML = "✅ 제출 및 채점 완료!";
+                btn.style.display = 'none';
+                resetBtn.style.display = 'block';
+                alert("성공적으로 제출되었습니다!");
+            })
+            .catch(err => {
+                status.innerText = "❌ 전송 오류. 다시 시도해주세요.";
+                btn.disabled = false;
+            });
+        };
+    };
+    reader.readAsDataURL(file);
+}
