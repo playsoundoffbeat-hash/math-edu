@@ -92,11 +92,17 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
 
-                    // [설정] 사장님이 말씀하신 1600px로 원복했습니다.
+                    // [수정 완료] 1600px 고정 로직 오타 수정
                     const TARGET_WIDTH = 1600; 
                     let w = img.width, h = img.height;
-                    if (w > TARGET_WIDTH) { h *= TARGET_WIDTH / w; width = TARGET_WIDTH; }
-                    canvas.width = w; canvas.height = h;
+
+                    if (w > TARGET_WIDTH) { 
+                        h *= TARGET_WIDTH / w; 
+                        w = TARGET_WIDTH; // width -> w로 정확히 수정했습니다.
+                    }
+
+                    canvas.width = w; 
+                    canvas.height = h;
                     ctx.drawImage(img, 0, 0, w, h);
                     
                     const base64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
