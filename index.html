@@ -22,8 +22,6 @@
         .submit-btn { background: #28a745; color: white; border: none; padding: 15px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; }
         .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
         #status { margin-top: 15px; font-weight: bold; word-break: break-all; }
-        
-        /* 새로 추가된 '다시 제출' 버튼 스타일 */
         .reset-btn { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 14px; margin-top: 10px; display: none; }
     </style>
 </head>
@@ -76,9 +74,8 @@
             }
         }
 
-        // [핵심] 폼 초기화 함수 - 새로고침 없이 다음 제출 준비
         function resetForm() {
-            document.getElementById('photo').value = ""; // 파일 선택 초기화
+            document.getElementById('photo').value = ""; 
             document.getElementById('preview-img').src = "";
             document.getElementById('preview-container').style.display = 'none';
             document.getElementById('status').innerHTML = "";
@@ -104,44 +101,33 @@
             }
 
             btn.disabled = true;
-            status.innerHTML = "⏳ 사진 압축 및 전송 중... (최대 10초)";
+            status.innerHTML = "⏳ 원본 사진 전송 중... (대용량은 시간이 소요됩니다)";
 
             const file = fileInput.files[0];
             const reader = new FileReader();
 
             reader.onload = function(e) {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const MAX_WIDTH = 1024;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
+                // [수정 포인트] Canvas 압축 과정을 삭제하고 원본 Base64 데이터를 추출합니다.
+                const base64 = e.target.result.split(',')[1];
+                const data = { name: name, base64: base64 };
 
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-
-                    const data = { name: name, base64: base64 };
-
-                    fetch(WEB_APP_URL, {
-                        method: "POST",
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => response.text())
-                    .then(text => {
-                        status.innerHTML = "✅ 제출 성공!<br><small>다른 사진을 더 보낼 수 있습니다.</small>";
-                        btn.style.display = 'none'; // 제출 버튼 숨기기
-                        resetBtn.style.display = 'block'; // '추가 제출' 버튼 보이기
-                        alert("성공적으로 제출되었습니다!");
-                    })
-                    .catch(err => {
-                        status.innerText = "❌ 오류 발생. 다시 시도해주세요.";
-                        btn.disabled = false;
-                    });
-                };
+                fetch(WEB_APP_URL, {
+                    method: "POST",
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.text())
+                .then(text => {
+                    status.innerHTML = "✅ 원본 제출 성공!<br><small>고화질 분석을 시작합니다.</small>";
+                    btn.style.display = 'none';
+                    resetBtn.style.display = 'block';
+                    alert("성공적으로 제출되었습니다!");
+                })
+                .catch(err => {
+                    status.innerText = "❌ 전송 오류. 다시 시도해주세요.";
+                    btn.disabled = false;
+                });
             };
+            // 원본 파일을 그대로 읽습니다.
             reader.readAsDataURL(file);
         }
     </script>
