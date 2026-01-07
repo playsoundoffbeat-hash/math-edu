@@ -3,33 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>온라인 수학 채점 센터 수학 센터</title>
+    <title>수학 과제 지원 센터</title>
     <style>
-        body { font-family: 'Pretendard', sans-serif; max-width: 450px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+        /* 깔끔한 교육 사이트 스타일 정의 */
+        body { font-family: 'Pretendard', sans-serif; max-width: 450px; margin: 0 auto; padding: 20px; background: #f8f9fa; color: #333; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1 { color: #007BFF; font-size: 1.3rem; text-align: center; border-bottom: 2px solid #007BFF; padding-bottom: 10px; }
+        h1 { color: #007BFF; font-size: 1.4rem; text-align: center; border-bottom: 2px solid #007BFF; padding-bottom: 10px; margin-bottom: 20px; }
         
-        /* 탭 메뉴 디자인 */
         .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; background: #e9ecef; font-weight: bold; transition: 0.3s; }
-        .tab-btn.active { background: #007BFF; color: white; }
+        .tab-btn { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; background: #fff; font-weight: bold; transition: 0.3s; }
+        .tab-btn.active { background: #007BFF; color: white; border-color: #007BFF; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; }
-        .file-label { display: block; background: #007BFF; color: white; text-align: center; padding: 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        #preview-container { display: none; margin: 15px 0; }
-        #preview-img { width: 100%; border-radius: 8px; border: 2px solid #007BFF; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        input[type="text"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; font-size: 1rem; }
         
-        .submit-btn { width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .file-label { display: block; background: #6c757d; color: white; text-align: center; padding: 15px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        #preview-container { display: none; margin: 15px 0; }
+        #preview-img { width: 100%; border-radius: 8px; border: 1px solid #ddd; }
+        
+        .submit-btn { width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
         
-        /* 결과 리스트 디자인 */
-        .result-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fff; }
+        .result-item { border-bottom: 1px solid #eee; padding: 15px 0; }
         .result-date { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .result-feedback { font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; color: #333; }
         .result-img { width: 100%; border-radius: 6px; margin-top: 10px; border: 1px solid #eee; }
-        #status { margin-top: 10px; text-align: center; font-size: 0.9rem; font-weight: bold; color: #555; }
+        #status { margin-top: 15px; text-align: center; font-weight: bold; color: #007BFF; }
     </style>
 </head>
 <body>
@@ -43,14 +44,27 @@
 
     <div id="upload" class="tab-content active">
         <div class="card">
-            <p style="text-align:center; font-weight:bold; margin-bottom: 15px;">문제풀이 사진을 촬영하여 제출하세요.</p>
+            <label for="problem-select">제출할 문제 선택</label>
+            <select id="problem-select">
+                <option value="">-- 문제를 선택하세요 --</option>
+                <option value="prob1">문제 1번: 최소공배수의 성질</option>
+                <option value="prob2">문제 2번: 최대공약수와 최소공배수</option>
+                <option value="prob3">문제 3번: 연립방정식의 활용</option>
+            </select>
+
+            <label for="student-name">이름</label>
             <input type="text" id="student-name" placeholder="학생 이름을 입력하세요">
-            <input type="text" id="student-id" placeholder="학번/아이디 (결과 조회 시 필요)">
+
+            <label for="student-id">학번/아이디</label>
+            <input type="text" id="student-id" placeholder="결과 조회 시 사용할 아이디">
+
             <label class="file-label">
                 <input type="file" id="photo" accept="image/*" capture="camera" style="display:none;" onchange="previewFile()">
-                📸 사진 찍기 / 파일 선택
+                📸 풀이 사진 촬영 / 선택
             </label>
+            
             <div id="preview-container"><img id="preview-img" src=""></div>
+            
             <button class="submit-btn" onclick="uploadData()" id="submit-btn">과제 제출하기</button>
             <div id="status"></div>
         </div>
@@ -58,6 +72,7 @@
 
     <div id="results" class="tab-content">
         <div class="card">
+            <label for="search-id">아이디 입력</label>
             <input type="text" id="search-id" placeholder="등록한 아이디를 입력하세요">
             <button class="submit-btn" onclick="fetchResults()" style="background:#007BFF;">내 결과 조회하기</button>
             <div id="result-list" style="margin-top:20px;"></div>
@@ -65,10 +80,15 @@
     </div>
 
     <script>
-        // [필수] 사장님의 구글 앱스 스크립트 '새 배포' URL을 아래에 넣으세요.
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwFgy_p_zQZPe3E4waNbmBgaqramByCLIlZBD9UnNuMZN7o_uTkneuqwNk2QnO8gh8h/exec";
 
-        // 탭 전환 함수
+        // 문제별 정답 데이터 설정 (선생님이 여기서 정답을 관리하세요)
+        const answerMap = {
+            "prob1": "10번 문제 정답: 30 / 최소공배수 2^4 * 5^2 * 7^3을 만드는 [ ] 안의 수의 합",
+            "prob2": "11번 문제 정답: 21 / a=1, b=3, c=7의 곱",
+            "prob3": "12번 문제 정답: 4 / a=1, b=3의 합"
+        };
+
         function openTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -76,7 +96,6 @@
             event.currentTarget.classList.add('active');
         }
 
-        // 사진 미리보기
         function previewFile() {
             const file = document.getElementById('photo').files[0];
             const preview = document.getElementById('preview-img');
@@ -88,23 +107,22 @@
             }
         }
 
-        // [과제 제출] 로직
         function uploadData() {
+            const problemKey = document.getElementById('problem-select').value;
             const name = document.getElementById('student-name').value;
             const studentId = document.getElementById('student-id').value;
             const fileInput = document.getElementById('photo');
             const status = document.getElementById('status');
             const btn = document.getElementById('submit-btn');
 
-            // 이번 문제의 정답 데이터 (제미나이가 참고할 내용)
-            const targetAnswer = "문제 1번 정답: 200 / 문제 2번 정답: 가, 다(4번)";
-
-            if (!name || !studentId || fileInput.files.length === 0) {
-                return alert("이름, 아이디, 사진을 모두 확인해주세요.");
+            if (!problemKey || !name || !studentId || fileInput.files.length === 0) {
+                return alert("문제 선택, 이름, 아이디, 사진을 모두 확인해주세요.");
             }
 
+            const targetAnswer = answerMap[problemKey]; // 선택한 문제의 정답 가져오기
+
             btn.disabled = true;
-            status.innerHTML = "⏳ 전송 중... (약 3초)";
+            status.innerHTML = "⏳ 과제를 전송 중입니다...";
 
             const file = fileInput.files[0];
             const reader = new FileReader();
@@ -114,8 +132,6 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    
-                    // 이미지 최적화 (가로 1200px 기준)
                     const TARGET_WIDTH = 1200; 
                     let width = img.width, height = img.height;
                     if (width > TARGET_WIDTH) { height *= TARGET_WIDTH / width; width = TARGET_WIDTH; }
@@ -124,19 +140,15 @@
                     
                     const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
-                    // 서버로 보낼 데이터 구성
-                    const payload = {
-                        name: name,
-                        studentId: studentId,
-                        base64: base64,
-                        answer: targetAnswer
-                    };
-
                     fetch(WEB_APP_URL, { 
                         method: "POST", 
-                        body: JSON.stringify(payload) 
+                        body: JSON.stringify({ 
+                            name: name, 
+                            studentId: studentId, 
+                            base64: base64, 
+                            answer: targetAnswer 
+                        }) 
                     })
-                    .then(res => res.text())
                     .then(() => {
                         status.innerHTML = "✅ 제출 성공! 잠시 후 결과 탭에서 확인하세요.";
                         document.getElementById('photo').value = "";
@@ -146,32 +158,26 @@
                     .catch(err => { 
                         status.innerText = "❌ 전송 실패"; 
                         btn.disabled = false; 
-                        console.error(err);
                     });
                 };
             };
             reader.readAsDataURL(file);
         }
 
-        // [결과 조회] 로직
         function fetchResults() {
             const searchId = document.getElementById('search-id').value;
             const resultList = document.getElementById('result-list');
-            
             if (!searchId) return alert("아이디를 입력하세요.");
             
-            resultList.innerHTML = "⏳ 선생님의 힌트를 불러오는 중...";
+            resultList.innerHTML = "⏳ 선생님의 피드백을 불러오고 있습니다...";
             
-            // GET 방식으로 학생 아이디 전송 (구글 스크립트의 doGet 호출)
             fetch(`${WEB_APP_URL}?studentId=${searchId}`)
             .then(res => res.json())
             .then(data => {
                 if (!data || data.length === 0) {
-                    resultList.innerHTML = "조회된 결과가 없습니다. 학번을 다시 확인해주세요.";
+                    resultList.innerHTML = "조회된 결과가 없습니다. 아이디를 다시 확인해주세요.";
                     return;
                 }
-                
-                // 최신 제출본이 위로 오도록 역순 출력
                 resultList.innerHTML = data.reverse().map(item => `
                     <div class="result-item">
                         <div class="result-date">${item.date}</div>
@@ -180,12 +186,8 @@
                     </div>
                 `).join('');
             })
-            .catch(err => {
-                resultList.innerHTML = "❌ 조회 중 오류가 발생했습니다.";
-                console.error(err);
-            });
+            .catch(() => { resultList.innerHTML = "❌ 조회 오류가 발생했습니다."; });
         }
     </script>
 </body>
 </html>
-
