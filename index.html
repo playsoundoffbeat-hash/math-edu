@@ -68,4 +68,76 @@
         }
 
         function resetForm() {
-            document
+            document.getElementById('photo').value = "";
+            document.getElementById('preview-img').src = "";
+            document.getElementById('preview-container').style.display = 'none';
+            document.getElementById('status').innerHTML = "";
+            const btn = document.getElementById('submit-btn');
+            btn.style.display = 'block';
+            btn.disabled = false;
+            document.getElementById('reset-btn').style.display = 'none';
+        }
+
+        // 사장님이 검토하신 바로 그 함수입니다!
+        function uploadData() {
+            const name = document.getElementById('student-name').value;
+            const fileInput = document.getElementById('photo');
+            const status = document.getElementById('status');
+            const btn = document.getElementById('submit-btn');
+            const resetBtn = document.getElementById('reset-btn');
+
+            if (!name || fileInput.files.length === 0) {
+                alert("이름과 사진을 확인해주세요.");
+                return;
+            }
+
+            btn.disabled = true;
+            status.innerHTML = "🚀 고해상도 최적화 및 전송 중...";
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const TARGET_WIDTH = 2560; 
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > TARGET_WIDTH) {
+                        height = height * (TARGET_WIDTH / width);
+                        width = TARGET_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+                    const data = { name: name, base64: base64 };
+
+                    fetch(WEB_APP_URL, {
+                        method: "POST",
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.text())
+                    .then(text => {
+                        status.innerHTML = "✅ 제출 성공! 채점 중입니다.";
+                        btn.style.display = 'none';
+                        resetBtn.style.display = 'block';
+                        alert("성공적으로 제출되었습니다!");
+                    })
+                    .catch(err => {
+                        status.innerText = "❌ 오류 발생. 다시 시도해주세요.";
+                        btn.disabled = false;
+                    });
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
