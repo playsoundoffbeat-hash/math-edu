@@ -52,57 +52,28 @@
     </div>
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwFgy_p_zQZPe3E4waNbmBgaqramByCLIlZBD9UnNuMZN7o_uTkneuqwNk2QnO8gh8h/exec";
+
         function openTab(name) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(name).classList.add('active');
             event.currentTarget.classList.add('active');
         }
+
         function previewFile() {
             const file = document.getElementById('photo').files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = e => { document.getElementById('preview-img').src = e.target.result; document.getElementById('preview-container').style.display = 'block'; };
+                reader.onload = e => { 
+                    document.getElementById('preview-img').src = e.target.result; 
+                    document.getElementById('preview-container').style.display = 'block'; 
+                };
                 reader.readAsDataURL(file);
             }
         }
+
         function uploadData() {
             const name = document.getElementById('student-name').value;
             const studentId = document.getElementById('student-id').value;
             const fileInput = document.getElementById('photo');
-            const status = document.getElementById('status');
-            const btn = document.getElementById('submit-btn');
-            if (!name || !studentId || fileInput.files.length === 0) return alert("항목을 모두 확인해주세요.");
-            btn.disabled = true; status.innerHTML = "⏳ 전송 중...";
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image(); img.src = e.target.result;
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const TW = 1200; let w = img.width, h = img.height;
-                    if (w > TW) { h *= TW / w; w = TW; }
-                    canvas.width = w; canvas.height = h;
-                    ctx.drawImage(img, 0, 0, w, h);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-                    fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ name: name, studentId: studentId, base64: base64 }) })
-                    .then(() => { status.innerHTML = "✅ 제출 성공!"; btn.disabled = false; });
-                };
-            };
-            reader.readAsDataURL(fileInput.files[0]);
-        }
-        function fetchResults() {
-            const id = document.getElementById('search-id').value;
-            const list = document.getElementById('result-list');
-            if (!id) return alert("아이디를 입력하세요.");
-            list.innerHTML = "⏳ 조회 중...";
-            fetch(`${WEB_APP_URL}?studentId=${id}`)
-            .then(res => res.json())
-            .then(data => {
-                if (!data || data.length === 0) { list.innerHTML = "기록이 없습니다."; return; }
-                list.innerHTML = data.reverse().map(item => `<div class="result-item"><div class="result-date">${item.date}</div><div class="result-feedback">${item.feedback}</div><img src="${item.imageUrl}" class="result-img"></div>`).join('');
-            });
-        }
-    </script>
-</body>
-</html>
+            const status = document.getElementById('
