@@ -147,7 +147,7 @@
             .then(res => res.json())
             .then(data => {
                 if (!data || data.length === 0) { list.innerHTML = "기록이 없습니다."; return; }
-                list.innerHTML = data.reverse().map(item => `
+                list.innerHTML = data.map(item => `
                     <div class="result-item">
                         <div class="result-date">${item.date}</div>
                         <div class="result-feedback">${item.feedback}</div>
@@ -159,4 +159,5 @@
     </script>
 </body>
 </html>
+
 
