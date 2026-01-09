@@ -92,7 +92,7 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
 
-                    const MAX_WIDTH = 1200; 
+                    const MAX_WIDTH = 1600; 
                     let w = img.width;
                     let h = img.height;
 
@@ -105,7 +105,7 @@
                     canvas.height = h;
                     ctx.drawImage(img, 0, 0, w, h);
                     
-                    const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+                    const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
                     status.innerHTML = "⏳ 전송 중...";
 
@@ -159,5 +159,6 @@
     </script>
 </body>
 </html>
+
 
 
